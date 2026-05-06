@@ -1,20 +1,21 @@
+from constant import *
+
 class Board: 
     def __init__(self, board_size = 64):
         self.board_size = board_size
-    #White pieces positions
-        self.white_pawns = 0X000000000000FF00
-        self.white_rooks = 0x0000000000000081
-        self.white_knights = 0x0000000000000042
-        self.white_bishops = 0x0000000000000024
-        self.white_queen = 0x000000000000008
-        self.white_king = 0x0000000000000010
-    #Black pieces positions
-        self.black_pawns = 0x00FF000000000000
-        self.black_rooks = 0x8100000000000000
-        self.black_knights = 0x4200000000000000
-        self.black_bishops = 0x2400000000000000
-        self.black_queen = 0x800000000000000
-        self.black_king = 0x1000000000000000
+        self.white_pawns = WHITE_PAWNS_START
+        self.white_rooks = WHITE_ROOKS_START
+        self.white_knights = WHITE_KNIGHTS_START
+        self.white_bishops = WHITE_BISHOPS_START
+        self.white_queen = WHITE_QUEEN_START
+        self.white_king = WHITE_KING_START
+
+        self.black_pawns = BLACK_PAWNS_START
+        self.black_rooks = BLACK_ROOKS_START
+        self.black_knights = BLACK_KNIGHTS_START
+        self.black_bishops = BLACK_BISHOPS_START
+        self.black_queen = BLACK_QUEEN_START
+        self.black_king = BLACK_KING_START
 
     def define_pieces(self):
         pieces = {'P': self.white_pawns, 
@@ -111,19 +112,3 @@ class Board:
                 else:
                     line += ". "
             print(line)
-
-if __name__ == "__main__":
-    chess_board = Board()
-    
-    # Interactive Sandbox Loop
-    while True:
-        chess_board.print_board()
-        print("\nEnter indices (e.g., White Pawn a2 to a4 is 8 to 24)")
-        try:
-            start = int(input("Start Index: "))
-            end = int(input("End Index: "))
-            chess_board.move_piece(start, end)
-        except ValueError:
-            print("Please enter valid numbers.")
-        except KeyboardInterrupt:
-            break
