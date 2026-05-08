@@ -53,4 +53,29 @@ class MoveGen:
     def get_valid_king_moves(self, king_pos, friendly_pos):
         return self.king_moves[king_pos] &~ friendly_pos
 
+    def get_valid_pawn_moves(self, pawn_pos, occupied_pos, is_white):
+        move = 0
+        if is_white:
+            #pawns first move can be 2 steps forward
+            one_step = (pawn_pos << 8) & ~occupied_pos
+            move |= one_step
+            if one_step and (pawn_pos & RANK_2):
+                move |= (pawn_pos << 16) & ~occupied_pos
+        #black pawns first move can be 2 steps forward
+        else:
+            one_step = (pawn_pos >> 8) & ~occupied_pos
+            move |= one_step
+            if one_step and (pawn_pos & RANK_7):
+                move |= (pawn_pos >> 16) & ~occupied_pos 
+        return move
+    
+    def get_valid_pawn_attacks(self, pawn_pos, enemy_pos, is_white):
+        move = 0
+        if is_white:
+            move |= (pawn_pos << 9) & enemy_pos & NOT_A_FILE
+            move |= (pawn_pos << 7) & enemy_pos & NOT_H_FILE
+        else:
+            move |= (pawn_pos >> 7) & enemy_pos & NOT_A_FILE
+            move |= (pawn_pos >> 9) & enemy_pos & NOT_H_FILE
+        return move
 
