@@ -1,8 +1,10 @@
 from constant import *
+from movegen import MoveGen
 
 class Board: 
     def __init__(self, board_size = 64):
         self.board_size = board_size
+        self.movegen = MoveGen()
         self.white_pawns = WHITE_PAWNS_START
         self.white_rooks = WHITE_ROOKS_START
         self.white_knights = WHITE_KNIGHTS_START
@@ -32,6 +34,50 @@ class Board:
                   'k': self.black_king}
         return pieces
     
+    def is_valid_move(self, start_idx, end_idx, piece):
+        start_mask = 1 << start_idx
+        end_mask = 1 << end_idx
+
+        white_pos = self.white_bishops | self.white_knights | self.white_pawns | self.white_rooks | self.white_queen | self.white_king
+        black_pos = self.black_bishops | self.black_knights | self.black_pawns | self.black_rooks | self.black_queen | self.black_king
+        occupied_pos = white_pos | black_pos
+
+        if piece == "P" or piece == "p":
+            is_white = piece.isupper()
+            valid_moves = self.movegen.get_valid_pawn_moves(start_mask, occupied_pos, is_white)
+            valid_moves |= self.movegen.get_valid_pawn_attacks(start_mask, occupied_pos, is_white)
+            return (valid_moves & end_mask) != 0
+        elif piece == "R" or piece == "r":
+            valid_moves = self.movegen.get_valid_rook_moves(start_mask, occupied_pos, white_pos if piece.isupper() else black_pos)
+            return (valid_moves & end_mask) != 0
+        elif piece == "N" or piece == "n":
+            valid_moves = self.movegen.get_valid_knight_moves(start_mask, white_pos if piece.isupper() else black_pos)
+            return (valid_moves & end_mask) != 0
+        elif piece == "B" or piece == "b":
+            valid_moves = self.movegen.get_valid_bishop_moves(start_mask, occupied_pos, white_pos if piece.isupper() else black_pos)
+            return (valid_moves & end_mask) != 0
+        elif piece == "Q" or piece == "q":
+            valid_moves = self.movegen.get_valid_queen_moves(start_mask, occupied_pos, white_pos if piece.isupper() else black_pos)
+            return (valid_moves & end_mask) != 0
+        elif piece == "K" or piece == "k":
+            valid_moves = self.movegen.get_valid_king_moves(start_mask, white_pos if piece.isupper() else black_pos)
+            return (valid_moves & end_mask) != 0
+        return False
+
+    def update_piece_position(self, piece, move_mask):
+        if piece == "P": self.white_pawns ^= move_mask
+        elif piece == "R": self.white_rooks ^= move_mask
+        elif piece == "N": self.white_knights ^= move_mask
+        elif piece == "B": self.white_bishops ^= move_mask
+        elif piece == "Q": self.white_queen ^= move_mask
+        elif piece == "K": self.white_king ^= move_mask
+        elif piece == "p": self.black_pawns ^= move_mask
+        elif piece == "r": self.black_rooks ^= move_mask
+        elif piece == "n": self.black_knights ^= move_mask
+        elif piece == "b": self.black_bishops ^= move_mask
+        elif piece == "q": self.black_queen ^= move_mask
+        elif piece == "k": self.black_king ^= move_mask
+
     def move_piece(self, start_idx, end_idx):
         #Get the bitmask for the starting and ending positions
         start_mask = 1 << start_idx
@@ -53,18 +99,10 @@ class Board:
                     moved_piece = piece
                     break
             #Update the bits of the moving piece
-            if moved_piece == "P": self.white_pawns ^= move_mask
-            elif moved_piece == "R": self.white_rooks ^= move_mask
-            elif moved_piece == "N": self.white_knights ^= move_mask
-            elif moved_piece == "B": self.white_bishops ^= move_mask
-            elif moved_piece == "Q": self.white_queen ^= move_mask
-            elif moved_piece == "K": self.white_king ^= move_mask
-            elif moved_piece == "p": self.black_pawns ^= move_mask
-            elif moved_piece == "r": self.black_rooks ^= move_mask
-            elif moved_piece == "n": self.black_knights ^= move_mask
-            elif moved_piece == "b": self.black_bishops ^= move_mask
-            elif moved_piece == "q": self.black_queen ^= move_mask
-            elif moved_piece == "k": self.black_king ^= move_mask
+            if self.is_valid_move(start_idx, end_idx, moved_piece):
+                self.update_piece_position(moved_piece, move_mask)
+            else: 
+                print("Invalid move for the piece.")
         
             capture_mask = ~end_mask
             if moved_piece.isupper(): # If the moved piece is white, check for black pieces at the ending position
