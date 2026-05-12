@@ -101,24 +101,24 @@ class Board:
             #Update the bits of the moving piece
             if self.is_valid_move(start_idx, end_idx, moved_piece):
                 self.update_piece_position(moved_piece, move_mask)
+                
+                capture_mask = ~end_mask
+                if moved_piece.isupper(): # If the moved piece is white, check for black pieces at the ending position
+                    self.black_pawns &= capture_mask
+                    self.black_rooks &= capture_mask
+                    self.black_knights &= capture_mask
+                    self.black_bishops &= capture_mask
+                    self.black_queen &= capture_mask
+                    self.black_king &= capture_mask
+                else: # If the moved piece is black, check for white pieces at the ending position
+                    self.white_pawns &= capture_mask
+                    self.white_rooks &= capture_mask
+                    self.white_knights &= capture_mask
+                    self.white_bishops &= capture_mask
+                    self.white_queen &= capture_mask
+                    self.white_king &= capture_mask
             else: 
                 print("Invalid move for the piece.")
-        
-            capture_mask = ~end_mask
-            if moved_piece.isupper(): # If the moved piece is white, check for black pieces at the ending position
-                self.black_pawns &= capture_mask
-                self.black_rooks &= capture_mask
-                self.black_knights &= capture_mask
-                self.black_bishops &= capture_mask
-                self.black_queen &= capture_mask
-                self.black_king &= capture_mask
-            else: # If the moved piece is black, check for white pieces at the ending position
-                self.white_pawns &= capture_mask
-                self.white_rooks &= capture_mask
-                self.white_knights &= capture_mask
-                self.white_bishops &= capture_mask
-                self.white_queen &= capture_mask
-                self.white_king &= capture_mask
     
     def get_board_representation(self):
         board_representation = 0 # Initialize an empty board representation
