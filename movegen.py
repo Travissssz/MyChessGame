@@ -85,7 +85,7 @@ class MoveGen:
         return (self.directions.check_north(rook_pos, occupied_pos) | 
                 self.directions.check_south(rook_pos, occupied_pos) | 
                 self.directions.check_east(rook_pos, occupied_pos) | 
-                self.directions.check_west(rook_pos, occupied_pos)) &~ friendly_pos
+                self.directions.check_west(rook_pos, occupied_pos)) & ~friendly_pos
 
     def get_valid_bishop_moves(self, bishop_pos, occupied_pos, friendly_pos):
         return (self.directions.check_north_east(bishop_pos, occupied_pos) | 
@@ -96,5 +96,3 @@ class MoveGen:
     def get_valid_queen_moves(self, queen_pos, occupied_pos, friendly_pos):
         return (self.get_valid_bishop_moves(queen_pos, occupied_pos, friendly_pos) | 
                 self.get_valid_rook_moves(queen_pos, occupied_pos, friendly_pos))
-
-        

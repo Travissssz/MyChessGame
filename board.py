@@ -45,13 +45,14 @@ class Board:
         if piece == "P" or piece == "p":
             is_white = piece.isupper()
             valid_moves = self.movegen.get_valid_pawn_moves(start_mask, occupied_pos, is_white)
-            valid_moves |= self.movegen.get_valid_pawn_attacks(start_mask, occupied_pos, is_white)
+            enemy_pos = black_pos if is_white else white_pos
+            valid_moves |= self.movegen.get_valid_pawn_attacks(start_mask, enemy_pos, is_white)
             return (valid_moves & end_mask) != 0
         elif piece == "R" or piece == "r":
             valid_moves = self.movegen.get_valid_rook_moves(start_mask, occupied_pos, white_pos if piece.isupper() else black_pos)
             return (valid_moves & end_mask) != 0
         elif piece == "N" or piece == "n":
-            valid_moves = self.movegen.get_valid_knight_moves(start_mask, white_pos if piece.isupper() else black_pos)
+            valid_moves = self.movegen.get_valid_knight_moves(start_idx, white_pos if piece.isupper() else black_pos)
             return (valid_moves & end_mask) != 0
         elif piece == "B" or piece == "b":
             valid_moves = self.movegen.get_valid_bishop_moves(start_mask, occupied_pos, white_pos if piece.isupper() else black_pos)
@@ -100,8 +101,6 @@ class Board:
                     break
             #Update the bits of the moving piece
             if self.is_valid_move(start_idx, end_idx, moved_piece):
-                self.update_piece_position(moved_piece, move_mask)
-                
                 capture_mask = ~end_mask
                 if moved_piece.isupper(): # If the moved piece is white, check for black pieces at the ending position
                     self.black_pawns &= capture_mask
@@ -117,6 +116,8 @@ class Board:
                     self.white_bishops &= capture_mask
                     self.white_queen &= capture_mask
                     self.white_king &= capture_mask
+
+                self.update_piece_position(moved_piece, move_mask)
             else: 
                 print("Invalid move for the piece.")
     
