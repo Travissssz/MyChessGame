@@ -7,6 +7,10 @@ class MoveGen:
         self.knight_moves = self._precompute_knights()
         self.king_moves = self._precompute_king()
     
+    #for debug 
+    def get_indices_from_bitboard(self, bitboard):
+        return [i for i in range(64) if (bitboard & (1 << i)) != 0]
+    
     def _precompute_knights(self):
         #Moves the knight can take
         table = []
@@ -50,9 +54,11 @@ class MoveGen:
         return table
 
     def get_valid_knight_moves(self, knight_pos, friendly_pos):
+        print(f"Knight moves bitboard: {self.get_indices_from_bitboard(self.knight_moves[knight_pos] &~ friendly_pos)}")
         return self.knight_moves[knight_pos] &~ friendly_pos
     
     def get_valid_king_moves(self, king_pos, friendly_pos):
+        print(f"King moves bitboard: {self.get_indices_from_bitboard(self.king_moves[king_pos] &~ friendly_pos)}")
         return self.king_moves[king_pos] &~ friendly_pos
 
     def get_valid_pawn_moves(self, pawn_pos, occupied_pos, is_white):
@@ -69,6 +75,7 @@ class MoveGen:
             move |= one_step
             if one_step and (pawn_pos & RANK_7):
                 move |= (pawn_pos >> 16) & ~occupied_pos 
+        print(f"Pawn moves bitboard: {self.get_indices_from_bitboard(move)}")
         return move
     
     def get_valid_pawn_attacks(self, pawn_pos, enemy_pos, is_white):
@@ -79,20 +86,24 @@ class MoveGen:
         else:
             move |= (pawn_pos >> 7) & enemy_pos & NOT_A_FILE
             move |= (pawn_pos >> 9) & enemy_pos & NOT_H_FILE
+        print(f"Pawn attacks bitboard: {self.get_indices_from_bitboard(move)}")
         return move
     
     def get_valid_rook_moves(self, rook_pos, occupied_pos, friendly_pos):
+        print(f"Rook moves bitboard: {self.get_indices_from_bitboard((self.directions.check_north(rook_pos, occupied_pos) | self.directions.check_south(rook_pos, occupied_pos) | self.directions.check_east(rook_pos, occupied_pos) | self.directions.check_west(rook_pos, occupied_pos)) &~ friendly_pos)}")
         return (self.directions.check_north(rook_pos, occupied_pos) | 
                 self.directions.check_south(rook_pos, occupied_pos) | 
                 self.directions.check_east(rook_pos, occupied_pos) | 
                 self.directions.check_west(rook_pos, occupied_pos)) & ~friendly_pos
 
     def get_valid_bishop_moves(self, bishop_pos, occupied_pos, friendly_pos):
+        print(f"Bishop moves bitboard: {self.get_indices_from_bitboard((self.directions.check_north_east(bishop_pos, occupied_pos) | self.directions.check_north_west(bishop_pos, occupied_pos) | self.directions.check_south_east(bishop_pos, occupied_pos) | self.directions.check_south_west(bishop_pos, occupied_pos)) &~ friendly_pos)}")
         return (self.directions.check_north_east(bishop_pos, occupied_pos) | 
                 self.directions.check_north_west(bishop_pos, occupied_pos) | 
                 self.directions.check_south_east(bishop_pos, occupied_pos) | 
                 self.directions.check_south_west(bishop_pos, occupied_pos)) &~ friendly_pos
     
     def get_valid_queen_moves(self, queen_pos, occupied_pos, friendly_pos):
+        print(f"Queen moves bitboard: {self.get_indices_from_bitboard((self.get_valid_bishop_moves(queen_pos, occupied_pos, friendly_pos) | self.get_valid_rook_moves(queen_pos, occupied_pos, friendly_pos)) &~ friendly_pos)}")
         return (self.get_valid_bishop_moves(queen_pos, occupied_pos, friendly_pos) | 
                 self.get_valid_rook_moves(queen_pos, occupied_pos, friendly_pos))

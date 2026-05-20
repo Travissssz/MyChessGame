@@ -30,7 +30,7 @@ class Direction:
 
     def check_east(self, moving_piece_pos, occupied_pos):
         # East is right (<< 1). Mask NOT_H_FILE to prevent wrapping to A-file.
-        prop = ~occupied_pos & NOT_H_FILE
+        prop = ~occupied_pos & NOT_A_FILE
         gen = moving_piece_pos
         gen |= (gen << 1) & prop
         prop &= (prop << 1)
