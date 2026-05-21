@@ -74,6 +74,7 @@ class MoveGen:
             one_step = (pawn_pos >> 8) & ~occupied_pos
             move |= one_step
             if one_step and (pawn_pos & RANK_7):
+                print("here2")
                 move |= (pawn_pos >> 16) & ~occupied_pos 
         print(f"Pawn moves bitboard: {self.get_indices_from_bitboard(move)}")
         return move

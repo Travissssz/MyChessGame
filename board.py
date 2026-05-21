@@ -19,6 +19,8 @@ class Board:
         self.black_queen = BLACK_QUEEN_START
         self.black_king = BLACK_KING_START
 
+        self.whos_turn = 1 # 1 for white, 0 for black
+
     def define_pieces(self):
         pieces = {'P': self.white_pawns, 
                   'R': self.white_rooks, 
@@ -45,6 +47,7 @@ class Board:
         if piece == "P" or piece == "p":
             is_white = piece.isupper()
             valid_moves = self.movegen.get_valid_pawn_moves(start_mask, occupied_pos, is_white)
+            print(is_white)
             enemy_pos = black_pos if is_white else white_pos
             valid_moves |= self.movegen.get_valid_pawn_attacks(start_mask, enemy_pos, is_white)
             return (valid_moves & end_mask) != 0
@@ -79,6 +82,16 @@ class Board:
         elif piece == "q": self.black_queen ^= move_mask
         elif piece == "k": self.black_king ^= move_mask
 
+    def update_turn(self):
+        self.whos_turn = 1 - self.whos_turn # Toggle between 1 and 0
+
+    def is_valid_turn(self, piece):
+        if self.whos_turn == 1 and piece.isupper():
+            return True
+        elif self.whos_turn == 0 and piece.islower():
+            return True
+        return False
+
     def move_piece(self, start_idx, end_idx):
         #Get the bitmask for the starting and ending positions
         start_mask = 1 << start_idx
@@ -100,7 +113,7 @@ class Board:
                     moved_piece = piece
                     break
             #Update the bits of the moving piece
-            if self.is_valid_move(start_idx, end_idx, moved_piece):
+            if self.is_valid_move(start_idx, end_idx, moved_piece) and self.is_valid_turn(moved_piece):
                 capture_mask = ~end_mask
                 if moved_piece.isupper(): # If the moved piece is white, check for black pieces at the ending position
                     self.black_pawns &= capture_mask
@@ -118,6 +131,7 @@ class Board:
                     self.white_king &= capture_mask
 
                 self.update_piece_position(moved_piece, move_mask)
+                self.update_turn()
             else: 
                 print("Invalid move for the piece.")
     
