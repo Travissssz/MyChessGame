@@ -36,7 +36,7 @@ class Board:
                   'k': self.black_king}
         return pieces
     
-    def is_valid_move(self, start_idx, end_idx, piece):
+def is_valid_move(self, start_idx, end_idx, piece):
         start_mask = 1 << start_idx
         end_mask = 1 << end_idx
 
@@ -47,7 +47,6 @@ class Board:
         if piece == "P" or piece == "p":
             is_white = piece.isupper()
             valid_moves = self.movegen.get_valid_pawn_moves(start_mask, occupied_pos, is_white)
-            print(is_white)
             enemy_pos = black_pos if is_white else white_pos
             valid_moves |= self.movegen.get_valid_pawn_attacks(start_mask, enemy_pos, is_white)
             return (valid_moves & end_mask) != 0
@@ -64,7 +63,7 @@ class Board:
             valid_moves = self.movegen.get_valid_queen_moves(start_mask, occupied_pos, white_pos if piece.isupper() else black_pos)
             return (valid_moves & end_mask) != 0
         elif piece == "K" or piece == "k":
-            valid_moves = self.movegen.get_valid_king_moves(start_mask, white_pos if piece.isupper() else black_pos)
+            valid_moves = self.movegen.get_valid_king_moves(start_idx, white_pos if piece.isupper() else black_pos)
             return (valid_moves & end_mask) != 0
         return False
 

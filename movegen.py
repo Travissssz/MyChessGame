@@ -53,13 +53,15 @@ class MoveGen:
             table.append(move)
         return table
 
-    def get_valid_knight_moves(self, knight_pos, friendly_pos):
-        print(f"Knight moves bitboard: {self.get_indices_from_bitboard(self.knight_moves[knight_pos] &~ friendly_pos)}")
-        return self.knight_moves[knight_pos] &~ friendly_pos
+    def get_valid_knight_moves(self, knight_idx, friendly_pos):
+        moves = self.knight_moves[knight_idx] & ~friendly_pos
+        print(f"Knight moves bitboard: {self.get_indices_from_bitboard(moves)}")
+        return moves
     
-    def get_valid_king_moves(self, king_pos, friendly_pos):
-        print(f"King moves bitboard: {self.get_indices_from_bitboard(self.king_moves[king_pos] &~ friendly_pos)}")
-        return self.king_moves[king_pos] &~ friendly_pos
+    def get_valid_king_moves(self, king_idx, friendly_pos):
+        moves = self.king_moves[king_idx] & ~friendly_pos
+        print(f"King moves bitboard: {self.get_indices_from_bitboard(moves)}")
+        return moves
 
     def get_valid_pawn_moves(self, pawn_pos, occupied_pos, is_white):
         move = 0
@@ -108,3 +110,43 @@ class MoveGen:
         print(f"Queen moves bitboard: {self.get_indices_from_bitboard((self.get_valid_bishop_moves(queen_pos, occupied_pos, friendly_pos) | self.get_valid_rook_moves(queen_pos, occupied_pos, friendly_pos)) &~ friendly_pos)}")
         return (self.get_valid_bishop_moves(queen_pos, occupied_pos, friendly_pos) | 
                 self.get_valid_rook_moves(queen_pos, occupied_pos, friendly_pos))
+
+def is_king_in_check(self, king_idx, friendly_pos, occupied_pos, enemy_rooks_pos, enemy_bishop_pos, enemy_queen_pos, enemy_knight_pos, enemy_pawn_pos, checking_white_king):
+        
+        king_pos = 1 << king_idx
+
+        if king_pos == 0:
+            return False 
+        
+        rook_ray = self.get_valid_rook_moves(king_pos, occupied_pos, friendly_pos)
+        if (rook_ray & (enemy_rooks_pos | enemy_queen_pos)) != 0:
+            return True
+
+        bishop_ray = self.get_valid_bishop_moves(king_pos, occupied_pos, friendly_pos)
+        if (bishop_ray & (enemy_bishop_pos | enemy_queen_pos)) != 0:
+            return True
+        
+        knight_ray = self.get_valid_knight_moves(king_idx, friendly_pos)  
+        if (knight_ray & enemy_knight_pos) != 0:
+            return True
+        
+        pawn_attack_mask = 0
+        if checking_white_king:
+            pawn_attack_mask |= (king_pos << 9) & NOT_A_FILE
+            pawn_attack_mask |= (king_pos << 7) & NOT_H_FILE
+        else:
+            pawn_attack_mask |= (king_pos >> 7) & NOT_A_FILE
+            pawn_attack_mask |= (king_pos >> 9) & NOT_H_FILE
+
+        if (pawn_attack_mask & enemy_pawn_pos) != 0:
+            return True
+            
+        return False
+        
+        
+
+        
+
+
+
+        pass
