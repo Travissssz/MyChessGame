@@ -142,11 +142,3 @@ def is_king_in_check(self, king_idx, friendly_pos, occupied_pos, enemy_rooks_pos
             return True
             
         return False
-        
-        
-
-        
-
-
-
-        pass
