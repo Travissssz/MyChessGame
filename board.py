@@ -36,7 +36,7 @@ class Board:
                   'k': self.black_king}
         return pieces
     
-def is_valid_move(self, start_idx, end_idx, piece):
+    def is_valid_move(self, start_idx, end_idx, piece):
         start_mask = 1 << start_idx
         end_mask = 1 << end_idx
 
@@ -121,6 +121,10 @@ def is_valid_move(self, start_idx, end_idx, piece):
                     self.black_bishops &= capture_mask
                     self.black_queen &= capture_mask
                     self.black_king &= capture_mask
+                    king_in_check = self.movegen.is_king_in_check(self.get_indices_from_bitboard(self.white_king), self.get_indices_from_bitboard(self.white_pawns | self.white_rooks | self.white_knights | self.white_bishops | self.white_queen), self.get_indices_from_bitboard(self.black_pawns | self.black_rooks | self.black_knights | self.black_bishops | self.black_queen), self.get_indices_from_bitboard(self.black_rooks), self.get_indices_from_bitboard(self.black_bishops), self.get_indices_from_bitboard(self.black_queen), self.get_indices_from_bitboard(self.black_knights), self.get_indices_from_bitboard(self.black_pawns), True)
+                    if king_in_check:
+                        print("Move would put your king in check. Move is invalid.")
+                        return
                 else: # If the moved piece is black, check for white pieces at the ending position
                     self.white_pawns &= capture_mask
                     self.white_rooks &= capture_mask
@@ -128,8 +132,12 @@ def is_valid_move(self, start_idx, end_idx, piece):
                     self.white_bishops &= capture_mask
                     self.white_queen &= capture_mask
                     self.white_king &= capture_mask
-
+                    king_in_check = self.movegen.is_king_in_check(self.get_indices_from_bitboard(self.black_king), self.get_indices_from_bitboard(self.black_pawns | self.black_rooks | self.black_knights | self.black_bishops | self.black_queen), self.get_indices_from_bitboard(self.white_pawns | self.white_rooks | self.white_knights | self.white_bishops | self.white_queen), self.get_indices_from_bitboard(self.white_rooks), self.get_indices_from_bitboard(self.white_bishops), self.get_indices_from_bitboard(self.white_queen), self.get_indices_from_bitboard(self.white_knights), self.get_indices_from_bitboard(self.white_pawns), False)
+                    if king_in_check:
+                        print("Move would put your king in check. Move is invalid.")
+                        return
                 self.update_piece_position(moved_piece, move_mask)
+                
                 self.update_turn()
             else: 
                 print("Invalid move for the piece.")

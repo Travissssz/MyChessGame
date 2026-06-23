@@ -53,7 +53,6 @@ class Direction:
         # Extra shift West (with boundary check)
         full_ray = gen | ((gen & NOT_A_FILE) >> 1)
         return (full_ray & ~moving_piece_pos) & 0xFFFFFFFFFFFFFFFF
-
     # --- DIAGONAL DIRECTIONS ---
 
     def check_north_east(self, moving_piece_pos, occupied_pos):
