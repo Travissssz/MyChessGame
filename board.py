@@ -92,7 +92,7 @@ class Board:
         return False
 
     def move_piece(self, start_idx, end_idx):
-        #Get the bitmask for the starting and ending positions
+        # Get the bitmask for the starting and ending positions
         start_mask = 1 << start_idx
         end_mask = 1 << end_idx
         move_mask = start_mask | end_mask
@@ -100,48 +100,90 @@ class Board:
         board_representation = self.get_board_representation()
         pieces = self.define_pieces()
 
-        #Check if there is a piece at the starting position
-        if(board_representation & start_mask) == 0:
+        # Check if there is a piece at the starting position
+        if (board_representation & start_mask) == 0:
             print("No piece at the starting position.")
             return
-        #If there is a piece at the starting position
         else:
-            #Find the piece that is being moved
+            # Find the piece that is being moved
             for piece, position in pieces.items():
                 if (position & start_mask) != 0:
                     moved_piece = piece
                     break
-            #Update the bits of the moving piece
+
+            # Update the bits of the moving piece
             if self.is_valid_move(start_idx, end_idx, moved_piece) and self.is_valid_turn(moved_piece):
+                
+                # Create backup of the current board state 
+                backup = {
+                    "wp": self.white_pawns, "wr": self.white_rooks, "wn": self.white_knights,
+                    "wb": self.white_bishops, "wq": self.white_queen, "wk": self.white_king,
+                    "bp": self.black_pawns, "br": self.black_rooks, "bn": self.black_knights,
+                    "bb": self.black_bishops, "bq": self.black_queen, "bk": self.black_king,
+                }
+
                 capture_mask = ~end_mask
-                if moved_piece.isupper(): # If the moved piece is white, check for black pieces at the ending position
+                if moved_piece.isupper(): # If the moved piece is white, clear black pieces
                     self.black_pawns &= capture_mask
                     self.black_rooks &= capture_mask
                     self.black_knights &= capture_mask
                     self.black_bishops &= capture_mask
                     self.black_queen &= capture_mask
                     self.black_king &= capture_mask
-                    king_in_check = self.movegen.is_king_in_check(self.get_indices_from_bitboard(self.white_king), self.get_indices_from_bitboard(self.white_pawns | self.white_rooks | self.white_knights | self.white_bishops | self.white_queen), self.get_indices_from_bitboard(self.black_pawns | self.black_rooks | self.black_knights | self.black_bishops | self.black_queen), self.get_indices_from_bitboard(self.black_rooks), self.get_indices_from_bitboard(self.black_bishops), self.get_indices_from_bitboard(self.black_queen), self.get_indices_from_bitboard(self.black_knights), self.get_indices_from_bitboard(self.black_pawns), True)
-                    if king_in_check:
-                        print("Move would put your king in check. Move is invalid.")
-                        return
-                else: # If the moved piece is black, check for white pieces at the ending position
+                else: # If the moved piece is black, clear white pieces
                     self.white_pawns &= capture_mask
                     self.white_rooks &= capture_mask
                     self.white_knights &= capture_mask
                     self.white_bishops &= capture_mask
                     self.white_queen &= capture_mask
                     self.white_king &= capture_mask
-                    king_in_check = self.movegen.is_king_in_check(self.get_indices_from_bitboard(self.black_king), self.get_indices_from_bitboard(self.black_pawns | self.black_rooks | self.black_knights | self.black_bishops | self.black_queen), self.get_indices_from_bitboard(self.white_pawns | self.white_rooks | self.white_knights | self.white_bishops | self.white_queen), self.get_indices_from_bitboard(self.white_rooks), self.get_indices_from_bitboard(self.white_bishops), self.get_indices_from_bitboard(self.white_queen), self.get_indices_from_bitboard(self.white_knights), self.get_indices_from_bitboard(self.white_pawns), False)
-                    if king_in_check:
-                        print("Move would put your king in check. Move is invalid.")
-                        return
+                    
                 self.update_piece_position(moved_piece, move_mask)
+
+                # Re-calculate positions after the simulated move
+                white_pos = self.white_bishops | self.white_knights | self.white_pawns | self.white_rooks | self.white_queen | self.white_king
+                black_pos = self.black_bishops | self.black_knights | self.black_pawns | self.black_rooks | self.black_queen | self.black_king
+                occupied_pos = white_pos | black_pos
                 
-                self.update_turn()
+                is_white = moved_piece.isupper()
+                king_mask = self.white_king if is_white else self.black_king
+                
+                # FIX 1: Safe index retrieval using precomputed bitboard tool
+                king_idx = self.movegen.get_indices_from_bitboard(king_mask)[0]
+                
+                # FIX 2: Correctly map enemy piece parameters based on player color
+                king_in_check = self.movegen.is_king_in_check(
+                    king_idx, 
+                    white_pos if is_white else black_pos, 
+                    occupied_pos, 
+                    self.black_rooks if is_white else self.white_rooks, 
+                    self.black_bishops if is_white else self.white_bishops, 
+                    self.black_queen if is_white else self.white_queen, 
+                    self.black_knights if is_white else self.white_knights, 
+                    self.black_pawns if is_white else self.white_pawns, 
+                    is_white
+                )
+                
+                if king_in_check:
+                    # Revert to backup state
+                    self.white_pawns = backup["wp"]
+                    self.white_rooks = backup["wr"]
+                    self.white_knights = backup["wn"]
+                    self.white_bishops = backup["wb"]
+                    self.white_queen = backup["wq"]
+                    self.white_king = backup["wk"]
+                    self.black_pawns = backup["bp"]
+                    self.black_rooks = backup["br"]
+                    self.black_knights = backup["bn"]
+                    self.black_bishops = backup["bb"]
+                    self.black_queen = backup["bq"]
+                    self.black_king = backup["bk"]
+                    print("Move would put your king in check. Move reverted.")
+                else:
+                    self.update_turn()
             else: 
                 print("Invalid move for the piece.")
-    
+
     def get_board_representation(self):
         board_representation = 0 # Initialize an empty board representation
         pieces = self.define_pieces()
